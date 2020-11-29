@@ -88,4 +88,51 @@ order by
 	end asc ;
 
 
--- ++
+-- ++ Практическое задание теме «Агрегация данных»
+
+/* 
+ * 1. Подсчитайте средний возраст пользователей в таблице users.
+*/
+use vk;
+with r as ( select id, date_format(now(), "%Y")
+   - date_format(birthday, '%Y')
+   - ( if ( date_format(now(), "%m-%d") < date_format(birthday, "%m-%d"), 1, 0 ) )
+   as age from users)
+select avg(age) -- , count(id), sum(age) -- контроль  
+from r   ;
+
+/* 
+ * 2. Подсчитайте количество дней рождения, которые приходятся на каждый из дней недели. Следует учесть, что необходимы дни недели текущего года, а не года рождения.
+ */
+with r as (select date_format(str_to_date(concat('2020-', date_format(birthday, '%c-%d')), '%Y-%c-%d'), '%a') as day_of_week from users )
+select day_of_week, count(day_of_week) from r group by day_of_week ; 
+
+
+/* 
+ * 3. (по желанию) Подсчитайте произведение чисел в столбце таблицы.
+ */
+select a, @mult:=@mult * a as running_multiplication
+from 
+  (select        1 as a
+	union select 2 as a
+	union select 3 as a
+	union select 4 as a
+	union select 5 as a
+  from dual) t
+  join (select @mult:=1) m
+;
+
+-- для суммирования можно так
+with t as (select        1 as a
+	union select 2 as a
+	union select 3 as a
+	union select 4 as a
+	union select 5 as a
+  from dual)
+select a, sum(a) over (order by a) as running_sum
+from t;
+
+
+
+
+
